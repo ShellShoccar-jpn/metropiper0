@@ -82,12 +82,20 @@ $ SHELL/MK_METRO_MST.SH DATA/metro_vocabulary.html
 
 ## 2. 普段の使い方
 
+### コマンド版
+
 今現在のどこかの駅の接近情報が知りたいなーと思ったら、SHELLディレクトリーにある`VIEW_METROLOC.SH`コマンドを実行すればよい。ただしこのコマンドは引数を2つとる。
 
 * 第1引数…知りたい駅の駅ナンバー
 * 第2引数…行きたい駅の駅ナンバー(ただし同一路線であること)
 
 東京メトロ各線の駅ナンバーは、[駅ナンバリング路線図](http://www.tokyometro.jp/station/common/pdf/rosen_j.pdf)参照。
+
+### Web版
+
+こりゃ便利なので、誰でも使えるようにとWebインターフェースを追加した。
+
+というわけで、**[メトロパイパーWeb版](http://lab-sakura.richlab.org/METROPIPER/)**をWebブラウザーで開く。使い方は、説明しなくてもわかるでしょ?
 
 ### コマンドの例と、ありし日・時刻の実行結果
 
@@ -158,9 +166,9 @@ $
 ```text:ディレクトリー構成
      metropiper/
      ├─ SHELL/                ・シェルコマンドとして呼び出されるプログラムの置き場所
-     │                           - MK_METRO_MST.SH……… マスターファイル生成スクリプト
-     │                           - VIEW_METROLOC.SH …… 接近情報表示スクリプト(親)
-     │                           - VIEW_METROLOC_*.SH … 接近情報表示スクリプト(子)
+     │   ├─ MK_METRO_MST.SH    - マスターファイル生成スクリプト
+     │   ├─ VIEW_METROLOC.SH   - 接近情報表示スクリプト(親)
+     │   └─ VIEW_METROLOC_*.SH - 接近情報表示スクリプト(子)
      ├─ CONF/                 ・各種設定ファイル置き場
      │   └─ ACCESSTOKEN.TXT    - 取得したアクセストークンを設定するファイル
      ├─ DATA/                 ・各種マスターデータ等の置き場
@@ -168,6 +176,13 @@ $
      │   ├─ RWC2RWN_MST.TXT    - 路線コードから路線名を引くためのマスター
      │   ├─ RWC2DIRC_MST.TXT   - 路線コードから路線の方面を引くためのマスター
      │   └─ METRO_VOC_MST.TXT  - その他各種コードから名称を引くためのマスター
+     ├─ CGI/                  ・Webインターフェース用CGIプログラムの置き場所
+     │   ├─ GET_SNUM_HTMLPART.AJAX.CGI
+     │   │                      - 駅の一覧の<option>タグを生成する(Ajax)
+     │   └─ GET_LOCINFO.AJAX.CGI
+     │                           - VIEW_METROLOC.SHのWebインターフェース版(Ajax)
+     ├─ TEMPLATE.HTML/        ・Webインターフェース用のテンプレートHTMLの置き場所
+     │   └─ MAIN.HTML          - メインページのテンプレートHTML
      ├─ TOOL/                 ・シェルスクリプトアプリ開発を助けるコマンド群
      │                           ("Open usp Tukubai"という名で公開されているもの)
      │                           (ただしそれのシェルスクリプトによるクローン版)

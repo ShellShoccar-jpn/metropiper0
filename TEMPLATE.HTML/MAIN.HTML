@@ -1,0 +1,196 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="ja">
+
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="東京メトロのオープンデータ活用コンテストを利用した接近情報表示プログラム「メトロパイパー」">
+<meta http-equiv="Content-Style-Type" content="text/css" />
+<meta http-equiv="Content-Script-Type" content="text/javascript" />
+<title>接近情報表示プログラム「メトロパイパー」</title>
+<script type="text/JavaScript">
+<!--
+  // ===== Ajaxのお約束オブジェクト作成 ==============================
+  function createXMLHttpRequest(){
+    if(window.XMLHttpRequest){return new XMLHttpRequest()}
+    if(window.ActiveXObject){
+      try{return new ActiveXObject("Msxml2.XMLHTTP.6.0")}catch(e){}
+      try{return new ActiveXObject("Msxml2.XMLHTTP.3.0")}catch(e){}
+      try{return new ActiveXObject("Microsoft.XMLHTTP")}catch(e){}
+    }
+    return false;
+  }
+
+
+  // ===== 「知りたい駅」に駅ナンバーコードを入れる ==================
+  function set_all_snum_to_fromsnum() {
+    var e, s, xhr;
+    var sUrl_ajax = '../CGI/GET_SNUM_HTMLPART.AJAX.CGI';
+
+    // --- 1)Ajaxコール ----------------------------------------------
+    xhr = createXMLHttpRequest();
+    if (! xhr) {return;}
+    s = 'dummy='+parseInt((new Date)/1);               //キャッシュ対策
+    xhr.open('POST', sUrl_ajax, false);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+    xhr.send(s);
+
+    // --- 2)アクセス成功で呼び出されたのでないなら即終了 ------------
+    if (xhr.readyState != 4) {return;}
+    if (xhr.status == 0    ) {return;} // ステータスが0の場合はクライアントによる中断の可能性があるので無視
+    if (xhr.status != 200) {
+      alert('アクセスエラー(' + xhr.status + ')');
+      return;
+    }
+
+    // --- 3)サーバーから返された部分HTMLを流し込む ------------------
+    e = document.getElementById('from_snum');
+    e.innerHTML = xhr.responseText;
+
+    // --- 4)「知りたい駅」セレクトボックスを有効化する --------------
+    e.disabled = false;
+  }
+
+
+  // ===== 「行きたい駅」に指定された路線の駅ナンバーコードを入れる ==
+  function set_snum_to_tosnum() {
+    var e, s, xhr;
+    var sUrl_ajax = '../CGI/GET_SNUM_HTMLPART.AJAX.CGI';
+
+    // --- 1)選択された「知りたい駅」の路線文字を取得 ----------------
+    e = document.getElementById('from_snum');
+    s = e.options[e.selectedIndex].value.substr(0,1);
+    if (! s.match(/^[A-Za-z]$/)) {
+      e = document.getElementById('to_snum'); // 有効な路線文字でなかったら
+      e.selectedIndex = 0;                    // 「行きたい駅」を無効化して
+      e.disabled      = true;                 // 終了する
+      return;
+    }
+
+    // --- 2)Ajaxコール ----------------------------------------------
+    xhr = createXMLHttpRequest();
+    if (! xhr) {return;}
+    s  = 'rwletter='+s;
+    s += '&dummy='+parseInt((new Date)/1);               //キャッシュ対策
+    xhr.open('POST', sUrl_ajax, false);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+    xhr.send(s);
+
+    // --- 3)アクセス成功で呼び出されたのでないなら即終了 ------------
+    if (xhr.readyState != 4) {return;}
+    if (xhr.status == 0    ) {return;} // ステータスが0の場合はクライアントによる中断の可能性があるので無視
+    if (xhr.status != 200) {
+      alert('アクセスエラー(' + xhr.status + ')');
+      return;
+    }
+
+    // --- 4)サーバーから返された部分HTMLを流し込む ------------------
+    e = document.getElementById('to_snum');
+    e.innerHTML = xhr.responseText;
+
+    // --- 5)「行きたい駅」セレクトボックスを有効化する --------------
+    e.disabled = false;
+
+    // --- 6)更新ボタンは無効化する ----------------------------------
+    document.getElementById('reload_btn').disabled = true;
+  }
+
+
+  // ===== 接近情報を表示する ========================================
+  function get_locinfo() {
+    var e, s, sFrom_snum, sTo_snum, xhr;
+    var sUrl_ajax = '../CGI/GET_LOCINFO.AJAX.CGI';
+
+    // --- 1)選択された「知りたい駅」の駅ナンバー取得 ----------------
+    e = document.getElementById('from_snum');
+    s = e.options[e.selectedIndex].value;
+    if (! s.match(/^[A-Za-z][0-9][0-9]$/)) {
+      document.getElementById('reload_btn').disabled = true;
+      return;
+    }
+    sFrom_snum = s;
+
+    // --- 2)選択された「行きたい駅」の駅ナンバーを取得 ----------------
+    e = document.getElementById('to_snum');
+    s = e.options[e.selectedIndex].value;
+    if (! s.match(/^[A-Za-z][0-9][0-9]$/)) {
+      document.getElementById('reload_btn').disabled = true;
+      return;
+    }
+    sTo_snum = s;
+
+    // --- 3)Ajaxコール ----------------------------------------------
+    xhr = createXMLHttpRequest();
+    if (! xhr) {return;}
+    s  = 'from_snum='+sFrom_snum+'&to_snum='+sTo_snum;
+    s += '&dummy='+parseInt((new Date)/1);               //キャッシュ対策
+    xhr.open('POST', sUrl_ajax, false);
+    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+    xhr.send(s);
+
+    // --- 4)アクセス成功で呼び出されたのでないなら即終了 ------------
+    if (xhr.readyState != 4) {return;}
+    if (xhr.status == 0    ) {return;} // ステータスが0の場合はクライアントによる中断の可能性があるので無視
+    if (xhr.status != 200) {
+      alert('アクセスエラー(' + xhr.status + ')');
+      return;
+    }
+
+    // --- 5)サーバーから返された部分HTMLを流し込む ------------------
+    e = document.getElementById('result');
+    e.innerHTML = xhr.responseText;
+
+    // --- 6)「更新」ボタンを有効化 ----------------------------------
+    e = document.getElementById('reload_btn');
+    e.disabled = false;
+  }
+// -->
+</script>
+</head>
+
+<body onload="set_all_snum_to_fromsnum()">
+<h1>メトロパイパー</h1>
+
+<h2>何駅の何方面の接近表示を見ますか?</h2>
+<table border="1">
+ <tr><th>知りたい駅</th><th>行きたい方面</th></tr>
+ <tr>
+   <td>
+     <select id="from_snum" name="from_snum" disabled="disabled" onchange="set_snum_to_tosnum()">
+       <!-- FROM_SELECT_BOX -->
+       <option value="-">選んでください</option>
+       <!-- FROM_SNUM_LIST
+       <option value="%1">%1 : %2線-%3駅</option>
+            FROM_SNUM_LIST -->
+       <!-- FROM_SELECT_BOX -->
+     </select>
+   </td>
+   <td>
+     <select id="to_snum" name="to_snum" disabled="disabled" onchange="get_locinfo()">
+       <!-- TO_SELECT_BOX -->
+       <option value="-">選んでください</option>
+       <!-- TO_SNUM_LIST
+       <option value="%1">%1 : %2線-%3駅</option>
+            TO_SNUM_LIST -->
+       <!-- TO_SELECT_BOX -->
+     </select>
+     <input type="button" id="reload_btn" name="reload_btn" value="更新" onclick="get_locinfo()" disabled="disabled" />
+   </td>
+ </tr>
+</table>
+
+
+<h2>結果</h2>
+<pre id="result" style="border: 1px solid; width: 40em; padding:1em;">
+ここに表示されます……
+</pre>
+
+<h2>詳細が知りたい人は…</h2>
+
+<ul>
+<li><a href="http://qiita.com/richmikan@github/items/6de979e7608180956862">解説ページ</a></li>
+<li><a href="https://github.com/ShellShoccar-jpn/metropiper">ソースコード</a></li>
+</ul>
+
+</body>
+
+</html>
