@@ -56,7 +56,10 @@
     var e, s, xhr;
     var sUrl_ajax = '../CGI/GET_SNUM_HTMLPART.AJAX.CGI';
 
-    // --- 1)選択された「知りたい駅」の路線文字を取得 ----------------
+    // --- 1)更新ボタンは無効化する ----------------------------------
+    document.getElementById('reload_btn').disabled = true;
+
+    // --- 2)選択された「知りたい駅」の路線文字を取得 ----------------
     e = document.getElementById('from_snum');
     s = e.options[e.selectedIndex].value.substr(0,1);
     if (! s.match(/^[A-Za-z]$/)) {
@@ -66,7 +69,7 @@
       return;
     }
 
-    // --- 2)Ajaxコール ----------------------------------------------
+    // --- 3)Ajaxコール ----------------------------------------------
     xhr = createXMLHttpRequest();
     if (! xhr) {return;}
     s  = 'rwletter='+s;
@@ -75,7 +78,7 @@
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
     xhr.send(s);
 
-    // --- 3)アクセス成功で呼び出されたのでないなら即終了 ------------
+    // --- 4)アクセス成功で呼び出されたのでないなら即終了 ------------
     if (xhr.readyState != 4) {return;}
     if (xhr.status == 0    ) {return;} // ステータスが0の場合はクライアントによる中断の可能性があるので無視
     if (xhr.status != 200) {
@@ -83,15 +86,12 @@
       return;
     }
 
-    // --- 4)サーバーから返された部分HTMLを流し込む ------------------
+    // --- 5)サーバーから返された部分HTMLを流し込む ------------------
     e = document.getElementById('to_snum');
     e.innerHTML = xhr.responseText;
 
-    // --- 5)「行きたい駅」セレクトボックスを有効化する --------------
+    // --- 6)「行きたい駅」セレクトボックスを有効化する --------------
     e.disabled = false;
-
-    // --- 6)更新ボタンは無効化する ----------------------------------
-    document.getElementById('reload_btn').disabled = true;
   }
 
 
