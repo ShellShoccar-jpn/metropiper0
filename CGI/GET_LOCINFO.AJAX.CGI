@@ -92,7 +92,7 @@ cat <<-HTTP_RES
 	
 	$(date '+%Y/%m/%d %H:%M:%S')現在
 
-	$($Homedir/SHELL/VIEW_METROLOC.SH $from_snum $to_snum 2>&1 | awk '/^[A-Za-z]/{sub(/^[^:]*: /,"",$0)} {print;}')
+	$($Homedir/SHELL/VIEW_METROLOC.SH $from_snum $to_snum 2>&1 | awk '/^[A-Za-z]/{sub(/^[^:]*: /,"",$0)} {print;}' | sed 's/^\.\./  /')
 HTTP_RES
 
 

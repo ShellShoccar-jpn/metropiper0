@@ -65,7 +65,7 @@ if [ ! -f "$File_token" ]; then
 fi
 appid=$(env - awk '/^[[:alnum:]]+$/' "$File_token")
 if [ -z "$appid" ]; then
-  echo "${0##*/}: The access token is not invalid." 1>&2
+  echo "${0##*/}: The access token is not valid." 1>&2
   exit 1
 fi
 
