@@ -92,7 +92,7 @@ echo "_$2" | grep -iq '^_[A-Z][0-9][0-9]$' || print_usage_and_exit
 printf '%s\n%s\n' $1 $2                          |
 sort                                             |
 join -1 1 -2 1 $Homedir/DATA/SNUM2RWSN_MST.TXT - |
-awk '{print} END{exit (NR==2)?0:1}'              > $Tmp-2stns
+awk '{print} END{exit (NR>=2)?0:1}'              > $Tmp-2stns
 if [ $? -ne 0 ]; then
   echo "${0##*/}: 存在しない駅ナンバーが指定されています。"
   exit 1
@@ -121,14 +121,8 @@ to_snum=$2
 # --- 個別スクリプトを用いる必要があるかどうか判断する ---------------
 from_rw=${from_snum%[0-9][0-9]}
 to_rw=${to_snum%[0-9][0-9]}
-if   [ $from_snum = 'C20'                                             ]; then
-  # 千代田線北綾瀬支線専用スクリプト
-  File_script="$Homedir/SHELL/VIEW_METROLOC_c.SH"
-elif [ \( $from_snum = 'C19' \) -a \( $from_snum = 'C20' \)           ]; then
-  # 千代田線北綾瀬支線専用スクリプト
-  File_script="$Homedir/SHELL/VIEW_METROLOC_c.SH"
-elif [ $from_rw = 'C'                                                 ]; then
-  # 千代田線本線専用スクリプト
+if   [ $from_rw = 'C'                                                 ]; then
+  # 千代田線専用スクリプト
   File_script="$Homedir/SHELL/VIEW_METROLOC_C.SH"
 elif [ \( $from_rw = 'F' \) -o \( $from_rw = 'Y' \)                   ]; then
   # 副都心線・有楽町線専用スクリプト
